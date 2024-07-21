@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://05biv5lxbrc8"]
+
+[ext_resource type="Script" path="res://scenes/weapons/blade.gd" id="1_gt6y1"]
+[ext_resource type="PackedScene" uid="uid://dxe461u45ovoi" path="res://media/models/weapon_blade_v2.gltf" id="2_s382q"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_my24l"]
+resource_local_to_scene = true
+height = 0.141259
+radius = 1.1
+
+[node name="blade" type="CharacterBody3D"]
+collision_layer = 16
+collision_mask = 43
+script = ExtResource("1_gt6y1")
+
+[node name="weapon_blade" parent="." instance=ExtResource("2_s382q")]
+
+[node name="blade_collision" type="CollisionShape3D" parent="."]
+shape = SubResource("CylinderShape3D_my24l")

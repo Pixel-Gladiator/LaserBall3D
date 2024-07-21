@@ -1,0 +1,33 @@
+[gd_scene load_steps=4 format=3 uid="uid://c5lybek3h7v56"]
+
+[ext_resource type="Script" path="res://scenes/resources/resource_hit.gd" id="1_y8r3e"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6abk3"]
+resource_local_to_scene = true
+
+[sub_resource type="SphereMesh" id="SphereMesh_3gg5m"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_6abk3")
+radius = 0.1
+height = 0.2
+
+[node name="BarrierHit" type="Node3D"]
+script = ExtResource("1_y8r3e")
+
+[node name="CPUParticles3D" type="CPUParticles3D" parent="."]
+emitting = false
+lifetime = 0.2
+one_shot = true
+explosiveness = 1.0
+randomness = 1.0
+lifetime_randomness = 0.5
+local_coords = true
+mesh = SubResource("SphereMesh_3gg5m")
+emission_shape = 2
+emission_sphere_radius = 0.25
+direction = Vector3(0, 0, -1)
+spread = 90.0
+flatness = 0.5
+initial_velocity_min = 25.0
+initial_velocity_max = 25.0
+angle_max = 45.0

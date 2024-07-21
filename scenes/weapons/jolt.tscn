@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=3 uid="uid://d080gmxqovc6e"]
+
+[ext_resource type="Script" path="res://scenes/weapons/jolt.gd" id="1_nfaoo"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dlrpy"]
+resource_local_to_scene = true
+transparency = 1
+albedo_color = Color(0, 1, 1, 0.501961)
+emission_enabled = true
+backlight_enabled = true
+backlight = Color(1, 1, 1, 1)
+refraction_enabled = true
+refraction_scale = 1.0
+
+[sub_resource type="TorusMesh" id="TorusMesh_3wih5"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_dlrpy")
+inner_radius = 1.0
+outer_radius = 1.25
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_0sppk"]
+resource_local_to_scene = true
+height = 0.25
+radius = 1.1
+
+[node name="Jolt" type="CharacterBody3D"]
+collision_layer = 16
+collision_mask = 39
+safe_margin = 0.01
+script = ExtResource("1_nfaoo")
+
+[node name="JoltRing" type="MeshInstance3D" parent="."]
+mesh = SubResource("TorusMesh_3wih5")
+
+[node name="JoltHit" type="CollisionShape3D" parent="."]
+shape = SubResource("CylinderShape3D_0sppk")

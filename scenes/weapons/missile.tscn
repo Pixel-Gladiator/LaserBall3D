@@ -1,0 +1,66 @@
+[gd_scene load_steps=9 format=3 uid="uid://4n3vk5oimik3"]
+
+[ext_resource type="Script" path="res://scenes/weapons/missile.gd" id="1_cufus"]
+[ext_resource type="PackedScene" uid="uid://hohgidi4vs4m" path="res://scenes/weapons/missle_explosion.tscn" id="2_figxk"]
+[ext_resource type="PackedScene" uid="uid://dtbnsqrh36itg" path="res://media/models/weapon_missile.gltf" id="2_usrwm"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nhop2"]
+resource_local_to_scene = true
+albedo_color = Color(0, 0, 1, 1)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_1w3gl"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_nhop2")
+radius = 0.25
+height = 1.8
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_322cx"]
+resource_local_to_scene = true
+radius = 0.25
+height = 2.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6d22q"]
+transparency = 1
+albedo_color = Color(1, 0.392157, 0, 1)
+grow_amount = 0.05
+distance_fade_mode = 1
+distance_fade_max_distance = 0.5
+
+[sub_resource type="TorusMesh" id="TorusMesh_0pmkv"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_6d22q")
+inner_radius = 0.1
+outer_radius = 0.2
+
+[node name="Missile" type="CharacterBody3D"]
+collision_layer = 16
+collision_mask = 39
+safe_margin = 0.01
+script = ExtResource("1_cufus")
+missile_explosion_scene = ExtResource("2_figxk")
+
+[node name="weapon_missile" parent="." instance=ExtResource("2_usrwm")]
+transform = Transform3D(12, 0, 0, 0, -5.24537e-07, -12, 0, 12, -5.24537e-07, 0, 0, -0.977312)
+
+[node name="MissleShot" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0.095253)
+mesh = SubResource("CapsuleMesh_1w3gl")
+
+[node name="MissleHit" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+shape = SubResource("CapsuleShape3D_322cx")
+
+[node name="CPUParticles3D" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.922893)
+gi_lightmap_scale = 1
+amount = 6
+lifetime = 0.5
+speed_scale = 1.5
+local_coords = true
+mesh = SubResource("TorusMesh_0pmkv")
+particle_flag_align_y = true
+direction = Vector3(0, 0, -1)
+spread = 10.0
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 7.0
+initial_velocity_max = 7.0

@@ -1,0 +1,36 @@
+[gd_scene load_steps=4 format=3 uid="uid://dyuf43gey8qw"]
+
+[ext_resource type="Script" path="res://scenes/characters/player/player_boost.gd" id="1_hutmc"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5fe0j"]
+resource_local_to_scene = true
+transparency = 1
+albedo_color = Color(0, 0.486275, 1, 0.501961)
+emission_enabled = true
+emission = Color(0, 0.964706, 0.992157, 1)
+emission_energy_multiplier = 2.0
+shadow_to_opacity = true
+proximity_fade_distance = 0.1
+distance_fade_max_distance = 1.0
+
+[sub_resource type="PrismMesh" id="PrismMesh_dsngk"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_5fe0j")
+size = Vector3(0.25, 0.75, 0.75)
+
+[node name="player_boost" type="Node3D"]
+script = ExtResource("1_hutmc")
+
+[node name="CPUParticles3D" type="CPUParticles3D" parent="."]
+transform = Transform3D(-4.37114e-08, -4.37114e-08, -1, -1, 1.91069e-15, 4.37114e-08, 0, 1, -4.37114e-08, 0, 0, 0)
+gi_mode = 2
+gi_lightmap_scale = 2
+emitting = false
+amount = 5
+lifetime = 0.75
+one_shot = true
+local_coords = true
+mesh = SubResource("PrismMesh_dsngk")
+particle_flag_align_y = true
+particle_flag_rotate_y = true
+direction = Vector3(0, 0, 1)

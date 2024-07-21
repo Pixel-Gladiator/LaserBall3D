@@ -1,0 +1,53 @@
+[gd_scene load_steps=7 format=3 uid="uid://dltktbpkoa0o2"]
+
+[ext_resource type="Script" path="res://scenes/weapons/plasma_blaster.gd" id="1_fyt5b"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ky23e"]
+transparency = 1
+albedo_color = Color(1, 0.501961, 0, 0.823529)
+emission = Color(1, 0.360784, 0, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_iwogr"]
+material = SubResource("StandardMaterial3D_ky23e")
+inner_radius = 0.15
+outer_radius = 0.25
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_322cx"]
+resource_local_to_scene = true
+radius = 0.227457
+height = 0.555627
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jpo7y"]
+transparency = 1
+albedo_color = Color(1, 0.501961, 0, 0.501961)
+
+[sub_resource type="SphereMesh" id="SphereMesh_h5siq"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_jpo7y")
+radius = 0.05
+height = 0.1
+
+[node name="Plasma_Blaster" type="CharacterBody3D"]
+collision_layer = 16
+collision_mask = 39
+safe_margin = 0.01
+script = ExtResource("1_fyt5b")
+
+[node name="PlasmaShot" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+gi_lightmap_scale = 2
+mesh = SubResource("TorusMesh_iwogr")
+
+[node name="PlasmaHit" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, -0.0986122)
+shape = SubResource("CapsuleShape3D_322cx")
+
+[node name="CPUParticles3D" type="CPUParticles3D" parent="."]
+gi_lightmap_scale = 1
+amount = 10
+lifetime = 0.5
+local_coords = true
+mesh = SubResource("SphereMesh_h5siq")
+direction = Vector3(0, 0, -1)
+initial_velocity_min = 5.0
+initial_velocity_max = 5.0

@@ -1,0 +1,45 @@
+[gd_scene load_steps=7 format=3 uid="uid://dyf4txif4freg"]
+
+[ext_resource type="Script" path="res://scenes/resources/resource.gd" id="1_idmt4"]
+[ext_resource type="PackedScene" uid="uid://c5lybek3h7v56" path="res://scenes/resources/resource_hit.tscn" id="2_ybn8b"]
+[ext_resource type="PackedScene" uid="uid://fsyffxodkeon" path="res://scenes/resources/energy.tscn" id="3_qyttd"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ctolo"]
+resource_local_to_scene = true
+albedo_color = Color(0.254902, 0.254902, 0.254902, 1)
+metallic = 0.5
+roughness = 0.75
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_yxxt5"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_ctolo")
+radius = 1.0
+height = 5.0
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_t4kg1"]
+resource_local_to_scene = true
+radius = 1.1
+height = 5.0
+
+[node name="Resource" type="CharacterBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+collision_layer = 32
+collision_mask = 31
+safe_margin = 0.01
+script = ExtResource("1_idmt4")
+resource_hit_scene = ExtResource("2_ybn8b")
+energy_scene = ExtResource("3_qyttd")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_yxxt5")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_t4kg1")
+
+[node name="NavigationObstacle3D" type="NavigationObstacle3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+radius = 1.5
+height = 4.0
+use_3d_avoidance = true
+
+[connection signal="tree_exited" from="." to="." method="_on_tree_exited"]

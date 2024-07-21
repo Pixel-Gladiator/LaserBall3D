@@ -1,0 +1,68 @@
+[gd_scene load_steps=7 format=3 uid="uid://br4p17vhwdaqa"]
+
+[ext_resource type="Script" path="res://scenes/weapons/rail_gun.gd" id="1_l1obu"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nhop2"]
+resource_local_to_scene = true
+transparency = 1
+albedo_color = Color(0, 1, 0.545098, 0.752941)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_1w3gl"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_nhop2")
+radius = 0.3
+height = 1.25
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n0wu3"]
+transparency = 1
+albedo_color = Color(0, 1, 1, 0.501961)
+
+[sub_resource type="BoxMesh" id="BoxMesh_eki37"]
+material = SubResource("StandardMaterial3D_n0wu3")
+size = Vector3(0.1, 0.1, 0.1)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_322cx"]
+resource_local_to_scene = true
+radius = 0.296183
+height = 1.23718
+
+[node name="Rail_Gun" type="CharacterBody3D"]
+collision_layer = 16
+collision_mask = 39
+safe_margin = 0.01
+script = ExtResource("1_l1obu")
+
+[node name="RailShot" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("CapsuleMesh_1w3gl")
+
+[node name="CPUParticles3D" type="CPUParticles3D" parent="RailShot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.4)
+amount = 16
+lifetime = 0.15
+mesh = SubResource("BoxMesh_eki37")
+direction = Vector3(0, -1, 0)
+spread = 0.0
+gravity = Vector3(0, 0, 0)
+
+[node name="CPUParticles3D2" type="CPUParticles3D" parent="RailShot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.347, 0, 0.293)
+amount = 16
+lifetime = 0.15
+mesh = SubResource("BoxMesh_eki37")
+direction = Vector3(0, -1, 0)
+spread = 0.0
+gravity = Vector3(0, 0, 0)
+
+[node name="CPUParticles3D3" type="CPUParticles3D" parent="RailShot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.347, 0, 0.293)
+amount = 16
+lifetime = 0.15
+mesh = SubResource("BoxMesh_eki37")
+direction = Vector3(0, -1, 0)
+spread = 0.0
+gravity = Vector3(0, 0, 0)
+
+[node name="RailHit" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+shape = SubResource("CapsuleShape3D_322cx")

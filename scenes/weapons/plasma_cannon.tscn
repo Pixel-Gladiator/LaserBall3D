@@ -1,0 +1,55 @@
+[gd_scene load_steps=7 format=3 uid="uid://bl0bt61u8ipc1"]
+
+[ext_resource type="Script" path="res://scenes/weapons/plasma_cannon.gd" id="1_n5t64"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nhop2"]
+resource_local_to_scene = true
+transparency = 1
+albedo_color = Color(1, 0.501961, 0, 0.784314)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_1w3gl"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_nhop2")
+radius = 0.35
+height = 1.25
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_322cx"]
+resource_local_to_scene = true
+custom_solver_bias = 0.5
+radius = 0.1
+height = 1.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sebgj"]
+transparency = 1
+albedo_color = Color(1, 0.501961, 0, 0.501961)
+
+[sub_resource type="SphereMesh" id="SphereMesh_k161c"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_sebgj")
+radius = 0.1
+height = 0.15
+
+[node name="Plasma_Cannon" type="CharacterBody3D"]
+collision_layer = 16
+collision_mask = 39
+safe_margin = 0.01
+script = ExtResource("1_n5t64")
+
+[node name="PlasmaShot" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+gi_lightmap_scale = 2
+mesh = SubResource("CapsuleMesh_1w3gl")
+
+[node name="PlasmaHit" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+shape = SubResource("CapsuleShape3D_322cx")
+
+[node name="CPUParticles3D" type="CPUParticles3D" parent="."]
+gi_lightmap_scale = 1
+amount = 10
+lifetime = 0.5
+local_coords = true
+mesh = SubResource("SphereMesh_k161c")
+direction = Vector3(0, 0, -1)
+initial_velocity_min = 5.0
+initial_velocity_max = 5.0

@@ -1,0 +1,31 @@
+[gd_scene load_steps=5 format=3 uid="uid://cbsmkmbytn6xp"]
+
+[ext_resource type="Script" path="res://scenes/weapons/laser_rifle.gd" id="1_t5dgr"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nhop2"]
+transparency = 1
+albedo_color = Color(0, 0.545098, 1, 0.501961)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_1w3gl"]
+material = SubResource("StandardMaterial3D_nhop2")
+radius = 0.2
+height = 1.5
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_322cx"]
+resource_local_to_scene = true
+radius = 0.19
+height = 1.4
+
+[node name="Laser_Rifle" type="CharacterBody3D"]
+collision_layer = 16
+collision_mask = 39
+safe_margin = 0.01
+script = ExtResource("1_t5dgr")
+
+[node name="LaserBeam" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("CapsuleMesh_1w3gl")
+
+[node name="LaserHit" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+shape = SubResource("CapsuleShape3D_322cx")

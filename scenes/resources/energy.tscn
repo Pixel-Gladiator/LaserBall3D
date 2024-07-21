@@ -1,0 +1,42 @@
+[gd_scene load_steps=5 format=3 uid="uid://fsyffxodkeon"]
+
+[ext_resource type="Script" path="res://scenes/resources/energy.gd" id="1_ojy70"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jdh4h"]
+resource_local_to_scene = true
+transparency = 1
+albedo_color = Color(0, 1, 1, 0.360784)
+emission_enabled = true
+emission = Color(0, 0.734117, 0.734117, 1)
+emission_energy_multiplier = 5.0
+clearcoat_roughness = 0.0
+backlight_enabled = true
+backlight = Color(1, 1, 1, 1)
+refraction_enabled = true
+refraction_scale = 0.85
+refraction_texture_channel = 3
+
+[sub_resource type="BoxMesh" id="BoxMesh_eq2w8"]
+resource_local_to_scene = true
+lightmap_size_hint = Vector2i(1, 1)
+material = SubResource("StandardMaterial3D_jdh4h")
+size = Vector3(0.75, 0.75, 0.75)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_wfpm3"]
+resource_local_to_scene = true
+radius = 0.743854
+
+[node name="Energy" type="CharacterBody3D"]
+collision_layer = 8
+collision_mask = 47
+safe_margin = 0.01
+script = ExtResource("1_ojy70")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.707107, -0.707107, 0, 0.579228, 0.579228, -0.573576, 0.40558, 0.40558, 0.819152, 0, 0, 0)
+gi_mode = 2
+gi_lightmap_scale = 1
+mesh = SubResource("BoxMesh_eq2w8")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_wfpm3")

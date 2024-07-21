@@ -1,0 +1,26 @@
+[gd_scene load_steps=12 format=3 uid="uid://ca7b5goalc73l"]
+
+[ext_resource type="Script" path="res://scenes/weapons/weapon_system.gd" id="1_30orq"]
+[ext_resource type="PackedScene" uid="uid://d080gmxqovc6e" path="res://scenes/weapons/jolt.tscn" id="2_a5jl2"]
+[ext_resource type="PackedScene" uid="uid://d4elhuy2oj11g" path="res://scenes/weapons/laser_pistol.tscn" id="3_3ubvj"]
+[ext_resource type="PackedScene" uid="uid://05biv5lxbrc8" path="res://scenes/weapons/blade.tscn" id="3_fxesb"]
+[ext_resource type="PackedScene" uid="uid://cbsmkmbytn6xp" path="res://scenes/weapons/laser_rifle.tscn" id="4_ush50"]
+[ext_resource type="PackedScene" uid="uid://bwo3ro2n7jsxd" path="res://scenes/weapons/laser_blaster.tscn" id="5_vn77s"]
+[ext_resource type="PackedScene" uid="uid://55x87u1ekxec" path="res://scenes/weapons/laser_repeater.tscn" id="6_nvpih"]
+[ext_resource type="PackedScene" uid="uid://dltktbpkoa0o2" path="res://scenes/weapons/plasma_blaster.tscn" id="7_pxre6"]
+[ext_resource type="PackedScene" uid="uid://bl0bt61u8ipc1" path="res://scenes/weapons/plasma_cannon.tscn" id="8_ababj"]
+[ext_resource type="PackedScene" uid="uid://br4p17vhwdaqa" path="res://scenes/weapons/rail_gun.tscn" id="9_1m7s4"]
+[ext_resource type="PackedScene" uid="uid://4n3vk5oimik3" path="res://scenes/weapons/missile.tscn" id="10_sv447"]
+
+[node name="Weapon_System" type="Node"]
+script = ExtResource("1_30orq")
+jolt = ExtResource("2_a5jl2")
+blade = ExtResource("3_fxesb")
+laser_pistol = ExtResource("3_3ubvj")
+laser_rifle = ExtResource("4_ush50")
+laser_blaster = ExtResource("5_vn77s")
+laser_repeater = ExtResource("6_nvpih")
+plasma_blaster = ExtResource("7_pxre6")
+plasma_cannon = ExtResource("8_ababj")
+rail_gun = ExtResource("9_1m7s4")
+missile = ExtResource("10_sv447")

@@ -1,0 +1,41 @@
+[gd_scene load_steps=4 format=3 uid="uid://hohgidi4vs4m"]
+
+[ext_resource type="Script" path="res://scenes/weapons/missle_explosion.gd" id="1_68iw0"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_inq8e"]
+resource_local_to_scene = true
+transparency = 1
+albedo_color = Color(1, 0.615686, 0, 0.501961)
+emission = Color(1, 0.662745, 0, 1)
+emission_energy_multiplier = 2.0
+backlight_enabled = true
+backlight = Color(1, 0.658824, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ypwoe"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_inq8e")
+size = Vector3(0.25, 0.25, 0.25)
+
+[node name="Missle_Explosion" type="Node3D"]
+script = ExtResource("1_68iw0")
+
+[node name="CPUParticles3D" type="CPUParticles3D" parent="."]
+gi_mode = 2
+gi_lightmap_scale = 2
+emitting = false
+amount = 36
+lifetime = 0.5
+one_shot = true
+speed_scale = 1.5
+explosiveness = 0.25
+mesh = SubResource("BoxMesh_ypwoe")
+emission_shape = 1
+emission_sphere_radius = 1.5
+spread = 180.0
+flatness = 0.5
+initial_velocity_min = 5.0
+initial_velocity_max = 5.0
+angular_velocity_min = 5.0
+angular_velocity_max = 5.0
+radial_accel_min = 5.0
+radial_accel_max = 5.0
