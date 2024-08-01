@@ -10,10 +10,13 @@ config_version=5
 
 [application]
 
-config/name="Laser_Ball"
+config/name="LaserBall3D"
 config/tags=PackedStringArray("3d", "physics")
 run/main_scene="res://scenes/World.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
+boot_splash/image="res://media/images/8bit_gladiator_alt_256x256.png"
+boot_splash/fullsize=false
+boot_splash/use_filter=false
 config/icon="res://icon.svg"
 
 [display]
@@ -57,7 +60,7 @@ shoot={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":32,"key_label":0,"unicode":32,"echo":false,"script":null)
 ]
 }
-sprint={
+boost={
 "deadzone": 0.5,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194326,"key_label":0,"unicode":0,"echo":false,"script":null)
 ]

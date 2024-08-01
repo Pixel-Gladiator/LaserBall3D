@@ -1,8 +1,11 @@
-[gd_scene load_steps=9 format=3 uid="uid://cirh827ewcmv"]
+[gd_scene load_steps=12 format=3 uid="uid://cirh827ewcmv"]
 
 [ext_resource type="Script" path="res://scenes/characters/enemy/enemy.gd" id="1_ou3a5"]
 [ext_resource type="PackedScene" uid="uid://dyen13fisyb5w" path="res://media/models/enemy_eye.gltf" id="2_870ts"]
 [ext_resource type="PackedScene" uid="uid://ca7b5goalc73l" path="res://scenes/weapons/weapon_system.tscn" id="2_r5fnt"]
+[ext_resource type="PackedScene" uid="uid://dxe461u45ovoi" path="res://media/models/weapon_blade_v2.gltf" id="4_nxbyk"]
+[ext_resource type="PackedScene" uid="uid://b45widqcidgi" path="res://media/models/weapon_blaster.gltf" id="5_x7qnu"]
+[ext_resource type="PackedScene" uid="uid://dmdqafhh4ox5q" path="res://media/models/weapon_zooka.gltf" id="6_4g4l8"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eykik"]
 resource_local_to_scene = true
@@ -31,15 +34,16 @@ resource_local_to_scene = true
 radius = 0.978668
 height = 3.0586
 
-[node name="Enemy" type="CharacterBody3D"]
+[node name="Character" type="CharacterBody3D"]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 0, 0)
 collision_layer = 2
 collision_mask = 39
 safe_margin = 0.01
 script = ExtResource("1_ou3a5")
-weapon_system = ExtResource("2_r5fnt")
+weapon_system_scene = ExtResource("2_r5fnt")
 
 [node name="Pivot" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
 
 [node name="model" parent="Pivot" instance=ExtResource("2_870ts")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0240855, 0)
@@ -58,19 +62,45 @@ skeleton = NodePath("")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.317256, 0, -1.38677e-08)
 
 [node name="weapon_slot_1" type="Marker3D" parent="Pivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.75, -0.2, 1.3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.773259, -0.183441, 3.38002e-08)
+
+[node name="blade" parent="Pivot/weapon_slot_1" instance=ExtResource("4_nxbyk")]
+transform = Transform3D(1.25, 0, 0, 0, -0.625, -1.08253, 0, 1.08253, -0.625, 0.0232593, -0.0406444, 0.75)
+visible = false
 
 [node name="weapon_slot_2" type="Marker3D" parent="Pivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.75, -0.2, -1.3)
+
+[node name="blade" parent="Pivot/weapon_slot_2" instance=ExtResource("4_nxbyk")]
+transform = Transform3D(1.25, 0, 0, 0, 0.625, -1.08253, 0, 1.08253, 0.625, -0.75, -0.224085, -0.75)
+visible = false
 
 [node name="weapon_slot_3" type="Marker3D" parent="Pivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, -0.14, 1.65)
+
+[node name="blaster" parent="Pivot/weapon_slot_3" instance=ExtResource("5_x7qnu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.15, -0.0040855, -0.9)
+visible = false
+
+[node name="weapon_slot_4" type="Marker3D" parent="Pivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, -0.14, -1.65)
+
+[node name="blaster" parent="Pivot/weapon_slot_4" instance=ExtResource("5_x7qnu")]
+transform = Transform3D(1, 0, 0, 0, -1, 8.74228e-08, 0, -8.74228e-08, -1, -1.15, -0.0040855, 0.9)
+visible = false
+
+[node name="weapon_slot_5" type="Marker3D" parent="Pivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.567643, 1.47507, -7.72662e-08)
+
+[node name="zooka" parent="Pivot/weapon_slot_5" instance=ExtResource("6_4g4l8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.34632, -1.23035, 1.11303e-07)
+visible = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, -0.715389, -0.214973, 3.12707e-08)
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, -0.255062, -0.214973, 1.11492e-08)
 shape = SubResource("CapsuleShape3D_yasgu")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+target_desired_distance = 1.5
 avoidance_enabled = true
 radius = 1.5
 neighbor_distance = 25.0

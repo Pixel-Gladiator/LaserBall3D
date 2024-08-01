@@ -1,7 +1,8 @@
-[gd_scene load_steps=27 format=3 uid="uid://hjmf80rfi6go"]
+[gd_scene load_steps=28 format=3 uid="uid://hjmf80rfi6go"]
 
 [ext_resource type="Script" path="res://scenes/World.gd" id="1_rm17p"]
 [ext_resource type="PackedScene" uid="uid://dm8u5w03ft7og" path="res://scenes/characters/player/player.tscn" id="2_gyq88"]
+[ext_resource type="PackedScene" uid="uid://l51a1ncno5m5" path="res://scenes/ui/player.tscn" id="3_7jfqm"]
 [ext_resource type="Texture2D" uid="uid://doe4v4qtuwcis" path="res://media/textures/rubber_tiles_1k/rubber_tiles_nor_gl_1k.png" id="4_0ei1l"]
 [ext_resource type="PackedScene" uid="uid://cirh827ewcmv" path="res://scenes/characters/enemy/enemy.tscn" id="4_qesmt"]
 [ext_resource type="Texture2D" uid="uid://oihr0n55l3j7" path="res://media/textures/rubber_tiles_1k/rubber_tiles_rough_1k.png" id="5_b16ca"]
@@ -99,6 +100,7 @@ point_count = 39
 [node name="World" type="Node"]
 script = ExtResource("1_rm17p")
 player_scene = ExtResource("2_gyq88")
+player_ui = ExtResource("3_7jfqm")
 enemy_scene = ExtResource("4_qesmt")
 resource_scene = ExtResource("5_o3dbq")
 

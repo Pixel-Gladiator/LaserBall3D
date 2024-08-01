@@ -1,13 +1,26 @@
 extends CharacterBody3D
 
 #signal shoot( shot )
+var ui_scene_players = [ ]
+var multiplayer_data = [
+	{
+		"name" : "",
+		"health" : 0.0,
+		"energy" : 0.0,
+		"experience" : 0.0,
+	}
+]
 
 # Weapons
 @export var weapon_system: PackedScene
 var weapon
 
-@export var player_boost: PackedScene
-var booster
+@onready var booster = $Pivot/booster/player_boost
+@onready var blade = $Pivot/weapon_slot_1/blade
+@onready var blaster_L = $Pivot/weapon_slot_2/weapon_blaster
+@onready var blaster_R = $Pivot/weapon_slot_3/weapon_blaster
+@onready var zooka_L = $Pivot/weapon_slot_4/weapon_zooka
+@onready var zooka_R = $Pivot/weapon_slot_5/weapon_zooka
 
 ###############################################################################
 # Player Default/Starting Values
@@ -18,7 +31,7 @@ var default_sprint = false
 var default_sprint_energy = 0.1
 var default_sprint_speed_multiplier = 2
 # Player Hit points
-var default_health = 100
+var default_health = 100.0
 # Health Regeneration Rate
 var default_health_regeneration_rate = 0
 # Player Energy level
@@ -39,27 +52,45 @@ var weapon_slots = [
 		"equipped" : false,
 		"weapon" : null,
 		"level_unlocked" : 1,
+		"weapons_available" : [ 0, 2, 3 ],
 	},
 	{
 		"enabled" : false,
 		"equipped" : false,
 		"weapon" : null,
 		"level_unlocked" : 5,
+		"weapons_available" : [ 1, 10 ],
 	},
 	{
 		"enabled" : false,
 		"equipped" : false,
 		"weapon" : null,
 		"level_unlocked" : 10,
+		"weapons_available" : [ 4, 5, 7 ],
 	},
 	{
 		"enabled" : false,
 		"equipped" : false,
 		"weapon" : null,
 		"level_unlocked" : 10,
+		"weapons_available" : [ 4, 5, 7 ],
+	},
+	{
+		"enabled" : false,
+		"equipped" : false,
+		"weapon" : null,
+		"level_unlocked" : 10,
+		"weapons_available" : [ 6, 8, 9 ],
+	},
+	{
+		"enabled" : false,
+		"equipped" : false,
+		"weapon" : null,
+		"level_unlocked" : 10,
+		"weapons_available" : [ 6, 8, 9 ],
 	},
 ]
-var active_weapon_slot = 1
+var active_weapon_slot = 0
 var weapon_slots_available = 0
 
 # How fast the player moves in meters per second.
@@ -117,11 +148,7 @@ func initialize( spawn_point ) :
 	if material :
 		material.albedo_color = player_colour
 	
-	weapon = weapon_system.instantiate( )
-	weapon.initialize( active_weapon, active_weapon_slot, character_num )
-	add_child( weapon )
 	add_to_group( "players" )
-	enable_weapon_slots( )
    
 func _ready( ) :
 	# How fast the player moves in meters per second.
@@ -151,70 +178,91 @@ func _ready( ) :
 		character_num += 1
 		print( "Player ", character_num, " has joined the game" )
 		
-	booster = player_boost.instantiate( )
-	booster.initialize( $Pivot/booster.global_position )
-	add_child( booster )
+	weapon = weapon_system.instantiate( )
+	weapon.initialize( active_weapon, active_weapon_slot, character_num )
+	add_child( weapon )
+	enable_weapon_slots( )
+	
+	#booster = player_boost.instantiate( )
+	#var booster_pos = $Pivot/booster.position
+	#booster.initialize( booster_pos )
+	#add_child( booster )
 
 func enable_weapon_slots( ) :
 	for weapon_slot in weapon_slots :
-		if weapon_slot[ "level_unlocked" ] >= level :
+		if weapon_slot[ "level_unlocked" ] <= level :
 			weapon_slot[ "enabled" ] = true
 		
 		if weapon_slot[ "enabled" ] :
 			weapon_slots_available += 1
 
 func regeneration( ) :
-	energy = energy + energy_regeneration_rate
+	energy += energy_regeneration_rate
 	if energy > energy_max :
 		energy = energy_max
 	
-	health = health + health_regeneration_rate
+	health += health_regeneration_rate
 	if health > health_max :
 		health = health_max
 
 func add_experience( exp_amount ) :
 	experience += exp_amount
+	if experience >= experience_for_next_level :
+		level_up( )
 
 func get_experience( ) :
 	return experience
 
 func level_up( ) :
-	experience_for_next_level *= 2
-	level += 1
+	while experience >= experience_for_next_level :
+		experience_for_next_level *= 2
+		level += 1
+		for weapon_slot in weapon_slots :
+			# Check each weapon slot to see if it is unlocked
+			if level >= weapon_slot.level_unlocked :
+				# Enable the weapon slot if it's not already
+				if not weapon_slot.enabled :
+					weapon_slot.enabled = true
+					
+		get_node( "/root/World" ).set_highest_player_level( )
 
 func _process( _delta ) :
 	if can_regenerate :
 		regeneration( )
-	if experience >= experience_for_next_level :
-		level_up( )
 	# Handle weapon changes
 	if Input.is_action_just_pressed( "weapon_cycle_up" ) :
-		weapon.cycle_up( active_weapon_slot )
+		weapon.cycle_up( weapon_slots[ active_weapon_slot ], true )
 	if Input.is_action_just_pressed( "weapon_cycle_down" ) :
-		weapon.cycle_down( active_weapon_slot )
+		weapon.cycle_down( weapon_slots[ active_weapon_slot ], true )
 	if Input.is_action_just_pressed( "weapon_1" ) :
-		weapon.set_weapon( 0 )
+		weapon.set_weapon( 0, 0 )
 	if Input.is_action_just_pressed( "weapon_2" ) :
-		weapon.set_weapon( 1 )
+		weapon.set_weapon( 1, 1 )
 	if Input.is_action_just_pressed( "weapon_3" ) :
-		weapon.set_weapon( 2 )
+		weapon.set_weapon( 2, 0 )
 	if Input.is_action_just_pressed( "weapon_4" ) :
-		weapon.set_weapon( 3 )
+		weapon.set_weapon( 3, 0 )
 	if Input.is_action_just_pressed( "weapon_5" ) :
-		weapon.set_weapon( 4 )
+		weapon.set_weapon( 4, 2 )
+		weapon.set_weapon( 4, 3 )
 	if Input.is_action_just_pressed( "weapon_6" ) :
-		weapon.set_weapon( 5 )
+		weapon.set_weapon( 5, 2 )
+		weapon.set_weapon( 5, 3 )
 	if Input.is_action_just_pressed( "weapon_7" ) :
-		weapon.set_weapon( 6 )
+		weapon.set_weapon( 6, 4 )
+		weapon.set_weapon( 6, 5 )
 	if Input.is_action_just_pressed( "weapon_8" ) :
-		weapon.set_weapon( 7 )
+		weapon.set_weapon( 7, 2 )
+		weapon.set_weapon( 7, 3 )
 	if Input.is_action_just_pressed( "weapon_9" ) :
 		if active_weapon == 8 :
-			weapon.set_weapon( 9 )
+			weapon.set_weapon( 9, 4 )
+			weapon.set_weapon( 9, 5 )
 		else :
-			weapon.set_weapon( 8 )
+			weapon.set_weapon( 8, 4 )
+			weapon.set_weapon( 8, 5 )
 	if Input.is_action_just_pressed( "weapon_10" ) :
-		weapon.set_weapon( 10 )
+		weapon.set_weapon( 10, 1 )
 
 	# Shooting
 	if Input.is_action_just_pressed( "shoot" ) and energy > weapon.get_energy_cost( ) and weapon.stays_active( ) :
@@ -268,7 +316,7 @@ func _physics_process( delta ) :
 	if Input.is_action_pressed( "move_forward" ) :
 		direction.z += 1
 	
-	if Input.is_action_pressed( "sprint" ) and  energy > sprint_energy :
+	if Input.is_action_pressed( "boost" ) and  energy > sprint_energy :
 		sprint_speed_multiplier = default_sprint_speed_multiplier
 		booster.activate( )
 	else :
@@ -277,10 +325,13 @@ func _physics_process( delta ) :
 	
 	# Sprint energy consumption
 	if sprint_speed_multiplier == default_sprint_speed_multiplier :
-		energy = energy - sprint_energy
+		energy -= sprint_energy
 		if energy < 0 :
 			energy = 0
 		sprinting = true
+		# If we're not moving and we boost, it will move us
+		if direction == Vector3.ZERO :
+			direction = direction_facing
 	else :
 		sprinting = false
 	
@@ -310,10 +361,11 @@ func _physics_process( delta ) :
 
 func hit( damage, hit_position, hitter ) :
 	health -= damage
+	var health_pct = ( health / default_health ) * 100.0
 	if health <= 0 :
 		queue_free( )
 	else :
-		print( "Player hit : ", ( health / default_health ) * 100, "% health" )
+		print( "Player health : ", health, " of ", default_health, " - ", health_pct, "%" )
 
 func get_num( ) :
 	return character_num

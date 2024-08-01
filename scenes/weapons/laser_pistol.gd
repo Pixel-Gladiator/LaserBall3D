@@ -12,7 +12,7 @@ var in_progress = false
 func initialize( spawn_position, look_direction, shooter_node, properties ) :
 	shooter = shooter_node
 	weapon_properties = properties
-	
+	start_position = spawn_position
 	position = spawn_position
 	var height_diff = spawn_position.y - shooter.position.y
 	look_at_from_position( Vector3( shooter.position.x, shooter.position.y + height_diff, shooter.position.z ), position )
@@ -45,4 +45,6 @@ func _physics_process( delta ) :
 			if not victim.is_in_group( "shots" ) :
 				queue_free( )
 			
-
+	elif position.distance_to( start_position ) > weapon_properties.range :
+		queue_free( )
+		

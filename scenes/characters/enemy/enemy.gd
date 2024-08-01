@@ -2,45 +2,77 @@ extends CharacterBody3D
 
 @onready var navigator = $NavigationAgent3D
 
+@onready var blade_R = $Pivot/weapon_slot_1/blade
+@onready var blade_L = $Pivot/weapon_slot_2/blade
+@onready var blaster_R = $Pivot/weapon_slot_3/blaster
+@onready var blaster_L = $Pivot/weapon_slot_4/blaster
+@onready var zooka = $Pivot/weapon_slot_5/zooka
+
 # Weapons
-@export var weapon_system: PackedScene
-var weapon
+@export var weapon_system_scene: PackedScene
+var weapon_system
 var default_weapon = 0
-var default_weapon_slots = 1
+var default_weapon_slot = 0
 var weapon_slots = [
 	{
 		"enabled" : true,
 		"equipped" : true,
 		"weapon" : default_weapon,
+		"level_unlocked" : 1,
+		"weapons_available" : [ 0, 2, 3, 4 ],
 	},
 	{
 		"enabled" : false,
 		"equipped" : false,
 		"weapon" : null,
+		"level_unlocked" : 3,
+		"weapons_available" : [ 1 ],
 	},
 	{
 		"enabled" : false,
 		"equipped" : false,
 		"weapon" : null,
+		"level_unlocked" : 3,
+		"weapons_available" : [ 1 ],
 	},
 	{
 		"enabled" : false,
 		"equipped" : false,
 		"weapon" : null,
+		"level_unlocked" : 5,
+		"weapons_available" : [ 5, 6 ],
+	},
+	{
+		"enabled" : false,
+		"equipped" : false,
+		"weapon" : null,
+		"level_unlocked" : 5,
+		"weapons_available" : [ 5, 6 ],
+	},
+	{
+		"enabled" : false,
+		"equipped" : false,
+		"weapon" : null,
+		"level_unlocked" : 10,
+		"weapons_available" : [ 7, 8, 9 ],
 	},
 ]
 
+# Enemy level
+var level = 1
 # Minimum speed of the mob in meters per second.
 var base_speed = 6.0
 # Experience points value
-@export var experience = 10.0
+var base_experience = 10.0
+@export var experience = base_experience
 # Hit points
 var default_health = 3.0
+var max_health = default_health
 var health = default_health
 # The downward acceleration when in the air, in meters per second squared.
 var fall_acceleration = 75.0
 
-var colour_increment = Color.BLACK
+var default_colour = Color.WHITE
 
 var default_detection_range = 25.0
 @export var player_detection_range = default_detection_range
@@ -70,6 +102,11 @@ var closest_target_last_position = Vector3.ZERO
 var nothing_in_range = false
 var nothing_in_range_count = 0
 var nothing_in_range_count_max = 3
+var weapon_list
+
+signal add_to_enemy_energy_pool
+signal add_experience_to_player
+signal enemy_death
 
 # This function will be called from the Main scene.
 func initialize( start_position, id ) :
@@ -85,24 +122,15 @@ func initialize( start_position, id ) :
 	velocity = velocity.rotated( Vector3.UP, rotation.y )
 	
 	add_to_group( "enemies" )
-	
-	var material = $Pivot/model/body.mesh.surface_get_material( 0 )
-	if material :
-		var colour_adjust = 1 / default_health
-		colour_increment.r = material.albedo_color.r * colour_adjust
-		colour_increment.g = material.albedo_color.g * colour_adjust
-		colour_increment.b = material.albedo_color.b * colour_adjust
-		#print( "Colour : ", material.albedo_color )
+	adjust_colour( )
 
 func _ready( ) :
-	for weapon_slot in weapon_slots :
-		var slot = 0
-		if weapon_slot[ "enabled" ] :
-			weapon = weapon_system.instantiate( )
-			weapon.initialize( weapon_slot[ "weapon" ], slot, character_num )
-			add_child( weapon )
-		slot += 1
+	var slot = 0
+	weapon_system = weapon_system_scene.instantiate( )
+	weapon_system.initialize( default_weapon, slot, character_num )
+	add_child( weapon_system )
 	
+	weapon_list = weapon_system.get_weapons_list( )
 	print( "Enemy ", character_num, " has joined the game" )
 
 func get_num( ) :
@@ -213,14 +241,14 @@ func set_closest_target( ) :
 		else :
 			not_moving = 0
 		# If we're stuck on the environment, target it
-		if not_moving > 60 :
+		if not_moving > 120 :
 			stuck = true
 			get_closest_resource( )
 		
 		navigator.target_position = closest_target.position
 		look_at( closest_target.position )
 		if closest_energy == null or stuck :
-			if position.distance_to( closest_target.position ) <= weapon.get_weapon_range( ) :
+			if position.distance_to( closest_target.position ) <= weapon_system.get_weapon_range( ) :
 				attack( )
 	else :
 		print( "Enemy : No targets within range" )
@@ -243,29 +271,80 @@ func _physics_process( _delta ) :
 func set_player_detection( new_value ) :
 	player_detection_range = new_value
 
-func hit( damage, _hit_position, player ) :
-	health -= damage
-	if health <= 0 :
-		print( "Enemy was destroyed.  Collecting ", experience, " XP" )
-		player.add_experience( experience )
-		print( "Player ", player.get_num( ), " now has ", player.get_experience( ), " XP" )
-		world.dec_enemy_count( )
-		queue_free( )
-	else :
-		print( "Enemy hit : ", ( health / default_health ) * 100, "% health" )
-		set_player_detection( position.distance_to( player.position ) )
-		var material = $Pivot/model/body.mesh.surface_get_material( 0 )
-		if material :
-			material.albedo_color = material.albedo_color.lerp( Color.DARK_RED, ( health / default_health ) )
-			#print( "health : ", health, " of ", default_health, " Colour : ", material.albedo_color )
+func adjust_colour( ) :
+	var material = $Pivot/model/body.mesh.surface_get_material( 0 )
+	if material :
+		var adjust = 1 - ( health / max_health )
+		if adjust > 0 :
+			material.albedo_color = material.albedo_color.lerp( Color.DARK_RED, adjust )
+		else :
+			material.albedo_color = default_colour
+
+func hit( damage, _hit_position, hitter ) :
+	var is_player = true
+	var groups = hitter.get_groups( )
+	for group in groups :
+		if group == "enemies" :
+			is_player = false
+	if is_player :
+		health -= damage
+		if health <= 0 :
+			print( "Enemy was destroyed.  Collecting ", experience, " XP" )
+			#player.add_experience( experience )
+			add_experience_to_player.emit( hitter.get_num( ), experience )
+			print( "Player ", hitter.get_num( ), " now has ", hitter.get_experience( ), " XP" )
+			enemy_death.emit( )
+			#world.dec_enemy_count( )
+			queue_free( )
+		else :
+			print( "Enemy hit : ", ( health / max_health ) * 100, "% health" )
+			set_player_detection( position.distance_to( hitter.position ) )
+			adjust_colour( )
 
 func collect_energy( energy_amount ) :
 	energy_collected += energy_amount
-	level_up( )
+	add_to_enemy_energy_pool.emit( energy_amount * 0.25 )
+	print( "Enemy ", character_num, " has ", energy_collected, " energy" )
+	if energy_collected > 99 :
+		level_up( )
 
 func level_up( ) :
-	#print( "Checking evolution" )
-	pass
+	# This is a workaround, these should never be null here
+	if weapon_list == null :
+		if weapon_system == null :
+			weapon_system = weapon_system_scene.instantiate( )
+			weapon_system.initialize( default_weapon, default_weapon_slot, character_num )
+			add_child( weapon_system )
+		weapon_list = weapon_system.get_weapons_list( )
+	
+	while energy_collected > 99 :
+		energy_collected -= 100
+		level += 1
+		max_health = default_health * ( level / 2.0 )
+		health = max_health
+		adjust_colour( )
+		print( "Enemy ", character_num, " is level ", level )
+		experience = base_experience * level
+		var slot = 0
+		for weapon_slot in weapon_slots :
+			var weapon_upgrade = false
+			# Check each weapon slot to see if it is unlocked
+			if level >= weapon_slot.level_unlocked :
+				# Enable the weapon slot if it's not already
+				if not weapon_slot.enabled :
+					weapon_slot.enabled = true
+				
+				for weap_avail_index in weapon_slot.weapons_available :
+					#print( "Weapon Index : ", weap_avail_index )
+					if level >= weapon_list[ weap_avail_index ].level_required :
+						if weapon_slot.weapon == null or weap_avail_index > weapon_slot.weapon :
+							weapon_upgrade = true
+							weapon_slot.weapon = weap_avail_index
+			
+			if weapon_upgrade :
+				weapon_system.set_weapon( weapon_slot.weapon, slot )
+			
+			slot += 1
 
 func attack( ) :
 	var slot = 0
@@ -276,18 +355,29 @@ func attack( ) :
 			var slot_path = NodePath( slot_name )
 			#print( "Slot path : ", slot_path.get_concatenated_names( ) )
 			var slot_node = get_node( slot_path )
-			if not weapon.stays_active( ) or ( weapon.stays_active( ) and not weapon.is_active( ) ) :
-				weapon.set_active( true, slot )
-				weapon.shoot( slot_node, position.direction_to( closest_target.position ), self )
+			if weapon_slot[ "weapon" ] != null :
+				if weapon_list[ weapon_slot[ "weapon" ] ][ "model" ] != null :
+					slot_name = "Pivot/weapon_slot_%s/%s" % [ slot, weapon_list[ weapon_slot[ "weapon" ] ][ "model" ] ]
+					slot_path = NodePath( slot_name )
+					var model_node = get_node( slot_path )
+					if model_node != null :
+						print( "Enemy ", character_num, " attacking with weapon ", slot_name )
+						model_node.visible = true
 			
-			slot += 1
+			if not weapon_system.stays_active( ) or ( weapon_system.stays_active( ) and not weapon_system.is_active( ) ) :
+				if ( weapon_system.stays_active( ) and not weapon_system.is_active( ) ) :
+					pass
+				weapon_system.set_active( true, slot )
+				weapon_system.shoot( slot_node, position.direction_to( closest_target.position ), self )
+			
+		slot += 1
 
 func update_target_location( ) :
 	set_closest_target( )
 
 func _on_navigation_agent_3d_target_reached( ) :
-	print( "Enemy : Target in range!" )
-	#attack( )
+	#print( "Enemy : Target in range!" )
+	attack( )
 
 func _on_navigation_agent_3d_velocity_computed( safe_velocity ) :
 	#safe_velocity.y = 0

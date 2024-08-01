@@ -15,23 +15,36 @@ var scale_increment = Vector3( 0.2, 0.2, 0.2 )
 var collision_radius_min = 1.1
 var collision_radius_max = 2.1
 var collision_radius_inc = 0.2
+#
+#func initialize( spawn_position, look_direction, wielder_node, properties ) :
+	#wielder = wielder_node
+	#weapon_properties = properties
+	#
+	#var group_fmt = "player%sweapon"
+	#if not wielder.is_player :
+		#group_fmt = "enemy%sweapon"
+	#var group_name = group_fmt % wielder.character_num
+	## Place the blade
+	#position = wielder.global_position - Vector3( 0.0, 0.4, 0.0 )
+	#
+	#add_collision_exception_with ( wielder )
+	#add_to_group( "shots" )
+	#add_to_group( group_name )
+	#activate( )
 
-func initialize( spawn_position, look_direction, wielder_node, properties ) :
-	wielder = wielder_node
-	weapon_properties = properties
-	
+func _on_ready( ) :
+	wielder = get_node( "/root/Character" )
+	print( "Name : ", wielder.name )
 	var group_fmt = "player%sweapon"
 	if not wielder.is_player :
 		group_fmt = "enemy%sweapon"
 	var group_name = group_fmt % wielder.character_num
-	
-	position = wielder.global_position - Vector3( 0.0, 0.4, 0.0 )
-	
 	add_collision_exception_with ( wielder )
 	add_to_group( "shots" )
 	add_to_group( group_name )
 	activate( )
 	
+
 func _process( delta ) :
 	if activated and $weapon_blade.scale.x < scale_extended :
 		print( "Blade Position : ", position, " Collision Radius : ", $blade_collision.shape.radius )
@@ -51,6 +64,9 @@ func _process( delta ) :
 			queue_free( )
 
 func _physics_process( delta ) :
+	if wielder == null :
+		return
+	
 	position = wielder.global_position - Vector3( 0.0, 0.4, 0.0 )
 	velocity = Vector3.ZERO * delta
 	rotate_y( weapon_properties.speed * delta * -1 )
@@ -69,6 +85,15 @@ func _physics_process( delta ) :
 
 func activate( ) :
 	activated = true
+	wielder = get_node( "/root/Character" )
+	print( "Name : ", wielder.name )
+	var group_fmt = "player%sweapon"
+	if not wielder.is_player :
+		group_fmt = "enemy%sweapon"
+	var group_name = group_fmt % wielder.character_num
+	add_collision_exception_with ( wielder )
+	add_to_group( "shots" )
+	add_to_group( group_name )
 
 func deactivate( ) :
 	activated = false

@@ -3,7 +3,7 @@ extends CharacterBody3D
 @export var resource_hit_scene: PackedScene
 @export var energy_scene: PackedScene
 
-var max_energy = 10.0
+var max_energy = 100.0
 var energy = 1.0
 var max_health = 10.0
 var health = 1.0
