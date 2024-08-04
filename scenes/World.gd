@@ -143,6 +143,9 @@ func add_to_enemy_energy_pool( energy_amount : float ):
 	enemy_energy_pool += energy_amount
 	print(  "Energy Pool : ", enemy_energy_pool )
 
+func player_death( player_num ) :
+	print( "Player ", player_num, " has died" )
+
 func _on_enemy_spawn_timer_timeout( ) :
 	enemy_max = player_highest_level * enemy_max_multiplier
 	if enemy_count < enemy_max :

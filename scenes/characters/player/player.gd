@@ -13,7 +13,6 @@ var multiplayer_data = [
 
 # Weapons
 @export var weapon_system: PackedScene
-var weapon
 
 @onready var booster = $Pivot/booster/player_boost
 @onready var blade = $Pivot/weapon_slot_1/blade
@@ -51,6 +50,7 @@ var weapon_slots = [
 		"enabled" : false,
 		"equipped" : false,
 		"weapon" : null,
+		"weapon_system" : null,
 		"level_unlocked" : 1,
 		"weapons_available" : [ 0, 2, 3 ],
 	},
@@ -58,13 +58,15 @@ var weapon_slots = [
 		"enabled" : false,
 		"equipped" : false,
 		"weapon" : null,
-		"level_unlocked" : 5,
+		"weapon_system" : null,
+		"level_unlocked" : 3,
 		"weapons_available" : [ 1, 10 ],
 	},
 	{
 		"enabled" : false,
 		"equipped" : false,
 		"weapon" : null,
+		"weapon_system" : null,
 		"level_unlocked" : 10,
 		"weapons_available" : [ 4, 5, 7 ],
 	},
@@ -72,6 +74,7 @@ var weapon_slots = [
 		"enabled" : false,
 		"equipped" : false,
 		"weapon" : null,
+		"weapon_system" : null,
 		"level_unlocked" : 10,
 		"weapons_available" : [ 4, 5, 7 ],
 	},
@@ -79,6 +82,7 @@ var weapon_slots = [
 		"enabled" : false,
 		"equipped" : false,
 		"weapon" : null,
+		"weapon_system" : null,
 		"level_unlocked" : 10,
 		"weapons_available" : [ 6, 8, 9 ],
 	},
@@ -86,11 +90,12 @@ var weapon_slots = [
 		"enabled" : false,
 		"equipped" : false,
 		"weapon" : null,
+		"weapon_system" : null,
 		"level_unlocked" : 10,
 		"weapons_available" : [ 6, 8, 9 ],
 	},
 ]
-var active_weapon_slot = 0
+var active_weapon_slot = 20
 var weapon_slots_available = 0
 
 # How fast the player moves in meters per second.
@@ -139,6 +144,8 @@ var default_colour = Color( 0.0, 0.0, 1.0, 1 )
 var energy_collected = 0
 var character_num = 0
 
+signal player_death
+
 # Functions
 ###############################################################################
 func initialize( spawn_point ) :
@@ -171,16 +178,16 @@ func _ready( ) :
 	# The player's score
 	score = 0
 	# Player experience points
-	experience = 0
+	experience = 500
 	active_weapon = default_active_weapon
 	var players = get_tree( ).get_nodes_in_group( "players" )
 	for player in players :
 		character_num += 1
 		print( "Player ", character_num, " has joined the game" )
 		
-	weapon = weapon_system.instantiate( )
-	weapon.initialize( active_weapon, active_weapon_slot, character_num )
-	add_child( weapon )
+	#weapon = weapon_system.instantiate( )
+	#weapon.initialize( active_weapon, active_weapon_slot, character_num )
+	#add_child( weapon )
 	enable_weapon_slots( )
 	
 	#booster = player_boost.instantiate( )
@@ -189,12 +196,16 @@ func _ready( ) :
 	#add_child( booster )
 
 func enable_weapon_slots( ) :
+	var slot = 0
 	for weapon_slot in weapon_slots :
-		if weapon_slot[ "level_unlocked" ] <= level :
+		if not weapon_slot[ "enabled" ] and weapon_slot[ "level_unlocked" ] <= level :
 			weapon_slot[ "enabled" ] = true
-		
-		if weapon_slot[ "enabled" ] :
-			weapon_slots_available += 1
+			weapon_slot[ "weapon_system" ] = weapon_system.instantiate( )
+			weapon_slot[ "weapon_system" ].initialize( weapon_slot[ "weapons_available" ][ 0 ], slot, character_num )
+			weapon_slot[ "weapon_system" ].weapon_active_status.connect( self.weapon_active_status )
+			weapon_slot[ "weapon_system" ].weapon_stays_active.connect( self.weapon_stays_active )
+			add_child( weapon_slot[ "weapon_system" ] )
+		slot += 1
 
 func regeneration( ) :
 	energy += energy_regeneration_rate
@@ -205,101 +216,129 @@ func regeneration( ) :
 	if health > health_max :
 		health = health_max
 
-func add_experience( exp_amount ) :
-	experience += exp_amount
-	if experience >= experience_for_next_level :
-		level_up( )
-
-func get_experience( ) :
-	return experience
-
 func level_up( ) :
 	while experience >= experience_for_next_level :
 		experience_for_next_level *= 2
 		level += 1
-		for weapon_slot in weapon_slots :
-			# Check each weapon slot to see if it is unlocked
-			if level >= weapon_slot.level_unlocked :
-				# Enable the weapon slot if it's not already
-				if not weapon_slot.enabled :
-					weapon_slot.enabled = true
-					
+		enable_weapon_slots( )
 		get_node( "/root/World" ).set_highest_player_level( )
+
+func weapon_action( weapon, method, arg1, arg2 = null, arg3 = null ) :
+	var callable = Callable( weapon, method )
+	if arg3 != null :
+		callable.call( arg1, arg2, arg3 )
+	elif arg2 != null :
+		callable.call( arg1, arg2 )
+	else :
+		callable.call( arg1 )
+
+func weapon_shot( ) :
+	if active_weapon_slot > weapon_slots.size( ) :
+		var slot = 0
+		for weapon_slot in weapon_slots :
+			if weapon_slot[ "enabled" ] :
+				var slot_name = "Pivot/weapon_slot_%s" % slot
+				var slot_path = NodePath( slot_name )
+				var slot_node = get_node( slot_path )
+				if energy > weapon_slot[ "weapon_system" ].get_weapon_property( "energy_cost" ) :
+					weapon_action( weapon_slot[ "weapon_system" ], "shoot", slot_node, direction_facing, self )
+			slot += 1
+	else :
+		if weapon_slots[ active_weapon_slot ][ "enabled" ] :
+			if energy > weapon_slots[ active_weapon_slot ][ "weapon_system" ].get_weapon_property( "energy_cost" ) :
+				var slot_name = "Pivot/weapon_slot_%s" % active_weapon_slot
+				var slot_path = NodePath( slot_name )
+				var slot_node = get_node( slot_path )
+				weapon_action( weapon_slots[ active_weapon_slot ][ "weapon_system" ], "shoot", slot_node, direction_facing, self )
+
+func weapon_swap( method, arg1, arg2 = null ) :
+	if active_weapon_slot > weapon_slots.size( ) :
+		for weapon_slot in weapon_slots :
+			if weapon_slot[ "enabled" ] :
+				if method.begins_with( "cycle_" ) :
+					weapon_action( weapon_slot[ "weapon_system" ], method, weapon_slot[ "weapons_available" ], arg1 )
+				else :
+					weapon_action( weapon_slot[ "weapon_system" ], method, arg1, arg2 )
+	else :
+		weapon_action( weapon_slots[ active_weapon_slot ][ "weapon_system" ], method, arg1, arg2 )
 
 func _process( _delta ) :
 	if can_regenerate :
 		regeneration( )
 	# Handle weapon changes
 	if Input.is_action_just_pressed( "weapon_cycle_up" ) :
-		weapon.cycle_up( weapon_slots[ active_weapon_slot ], true )
+		weapon_swap( "cycle_up", true )
 	if Input.is_action_just_pressed( "weapon_cycle_down" ) :
-		weapon.cycle_down( weapon_slots[ active_weapon_slot ], true )
+		weapon_swap( "cycle_down", true )
 	if Input.is_action_just_pressed( "weapon_1" ) :
-		weapon.set_weapon( 0, 0 )
+		weapon_swap( "set_weapon", 0, 0 )
 	if Input.is_action_just_pressed( "weapon_2" ) :
-		weapon.set_weapon( 1, 1 )
+		weapon_swap( "set_weapon", 1, 1 )
 	if Input.is_action_just_pressed( "weapon_3" ) :
-		weapon.set_weapon( 2, 0 )
+		weapon_swap( "set_weapon", 2, 0 )
 	if Input.is_action_just_pressed( "weapon_4" ) :
-		weapon.set_weapon( 3, 0 )
+		weapon_swap( "set_weapon", 3, 0 )
 	if Input.is_action_just_pressed( "weapon_5" ) :
-		weapon.set_weapon( 4, 2 )
-		weapon.set_weapon( 4, 3 )
+		weapon_swap( "set_weapon", 4, 2 )
+		weapon_swap( "set_weapon", 4, 3 )
 	if Input.is_action_just_pressed( "weapon_6" ) :
-		weapon.set_weapon( 5, 2 )
-		weapon.set_weapon( 5, 3 )
+		weapon_swap( "set_weapon", 5, 2 )
+		weapon_swap( "set_weapon", 5, 3 )
 	if Input.is_action_just_pressed( "weapon_7" ) :
-		weapon.set_weapon( 6, 4 )
-		weapon.set_weapon( 6, 5 )
+		weapon_swap( "set_weapon", 6, 4 )
+		weapon_swap( "set_weapon", 6, 5 )
 	if Input.is_action_just_pressed( "weapon_8" ) :
-		weapon.set_weapon( 7, 2 )
-		weapon.set_weapon( 7, 3 )
+		weapon_swap( "set_weapon", 7, 2 )
+		weapon_swap( "set_weapon", 7, 3 )
 	if Input.is_action_just_pressed( "weapon_9" ) :
 		if active_weapon == 8 :
-			weapon.set_weapon( 9, 4 )
-			weapon.set_weapon( 9, 5 )
+			weapon_swap( "set_weapon", 9, 4 )
+			weapon_swap( "set_weapon", 9, 5 )
 		else :
-			weapon.set_weapon( 8, 4 )
-			weapon.set_weapon( 8, 5 )
+			weapon_swap( "set_weapon", 8, 4 )
+			weapon_swap( "set_weapon", 8, 5 )
 	if Input.is_action_just_pressed( "weapon_10" ) :
-		weapon.set_weapon( 10, 1 )
+		weapon_swap( "set_weapon", 10, 1 )
 
 	# Shooting
-	if Input.is_action_just_pressed( "shoot" ) and energy > weapon.get_energy_cost( ) and weapon.stays_active( ) :
-		print( "Weapon ", weapon.get_weapon_name( ), " stays active when fired" )
-		var slot = 0
-		for weapon_slot in weapon_slots :
-			if weapon.is_active( ) :
-				weapon.set_active( false, slot )
-			
-			else :
-				if weapon_slot[ "enabled" ] :
-					var slot_name = "Pivot/weapon_slot_%s" % slot
-					#print( "Slot : ", slot_name )
-					var slot_path = NodePath( slot_name )
-					#print( "Slot path : ", slot_path.get_concatenated_names ( ) )
-					var slot_node = get_node( slot_path )
-					weapon.set_active( true, slot )
-					energy -= weapon.get_energy_cost( )
-					weapon.shoot( slot_node, direction_facing, self )
-				slot += 1
-			
+	if Input.is_action_just_pressed( "shoot" ) :
+		weapon_shot( )
+		#if energy > weapon.get_energy_cost( ) and weapon.stays_active( ) :
+		#print( "Weapon ", weapon.get_weapon_name( ), " stays active when fired" )
+		#var slot = 0
+		#for weapon_slot in weapon_slots :
+			#if weapon.is_active( ) :
+				#weapon.set_active( false, slot )
+			#
+			#else :
+				#if weapon_slot[ "enabled" ] :
+					#var slot_name = "Pivot/weapon_slot_%s" % slot
+					##print( "Slot : ", slot_name )
+					#var slot_path = NodePath( slot_name )
+					##print( "Slot path : ", slot_path.get_concatenated_names ( ) )
+					#var slot_node = get_node( slot_path )
+					#weapon.set_active( true, slot )
+					#energy -= weapon.get_energy_cost( )
+					#weapon.shoot( slot_node, direction_facing, self )
+				#slot += 1
+			#
 		shooting = true
 		
-	elif Input.is_action_pressed( "shoot" ) and energy > weapon.get_energy_cost( ) and not weapon.stays_active( ) :
-		var slot = 0
-		for weapon_slot in weapon_slots :
-			if weapon_slot[ "enabled" ] :
-				var slot_name = "Pivot/weapon_slot_%s" % slot
-				#print( "Slot : ", slot_name )
-				var slot_path = NodePath( slot_name )
-				#print( "Slot path : ", slot_path.get_concatenated_names ( ) )
-				var slot_node = get_node( slot_path )
-				weapon.set_active( true, slot )
-				energy -= weapon.get_energy_cost( )
-				weapon.shoot( slot_node, direction_facing, self )
-			slot += 1
-		shooting = true
+	elif Input.is_action_pressed( "shoot" ) and shooting :
+		weapon_shot( )
+		#var slot = 0
+		#for weapon_slot in weapon_slots :
+			#if weapon_slot[ "enabled" ] :
+				#var slot_name = "Pivot/weapon_slot_%s" % slot
+				##print( "Slot : ", slot_name )
+				#var slot_path = NodePath( slot_name )
+				##print( "Slot path : ", slot_path.get_concatenated_names ( ) )
+				#var slot_node = get_node( slot_path )
+				#weapon.set_active( true, slot )
+				#energy -= weapon.get_energy_cost( )
+				#weapon.shoot( slot_node, direction_facing, self )
+			#slot += 1
+		#shooting = true
 		
 	else :
 		shooting = false
@@ -363,6 +402,7 @@ func hit( damage, hit_position, hitter ) :
 	health -= damage
 	var health_pct = ( health / default_health ) * 100.0
 	if health <= 0 :
+		player_death.emit( character_num )
 		queue_free( )
 	else :
 		print( "Player health : ", health, " of ", default_health, " - ", health_pct, "%" )
@@ -377,5 +417,23 @@ func collect_energy( energy_amount ) :
 	energy += energy_amount
 	print( "Player Energy : ", energy )
 
-func get_weapon_slots( ) :
-	return weapon_slots
+func expend_energy( energy_amount ) :
+	energy -= energy_amount
+	print( "Player Energy : ", energy )
+
+func add_experience( exp_amount ) :
+	experience += exp_amount
+	if experience >= experience_for_next_level :
+		level_up( )
+
+func get_experience( ) :
+	return experience
+
+func get_level( ) :
+	return level
+
+func weapon_active_status( slot : int, status : bool ) :
+	pass
+
+func weapon_stays_active( slot : int, status : bool ) :
+	pass

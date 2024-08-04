@@ -9,8 +9,6 @@ height = 0.141259
 radius = 1.1
 
 [node name="blade" type="CharacterBody3D"]
-collision_layer = 16
-collision_mask = 43
 script = ExtResource("1_gt6y1")
 
 [node name="weapon_blade" parent="." instance=ExtResource("2_s382q")]
