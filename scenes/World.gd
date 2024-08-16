@@ -9,9 +9,13 @@ var ui
 @export var enemy_scene: PackedScene
 # resource  Scenes
 @export var resource_scene: PackedScene
-@export var max_resources = 250
-# This is the percentage chance of spawning a resource  expressed as a decimal between 0 and 1
-@export var resource_chance = float( max_resources / ( max_resources * 2 ) )
+@export var resource_hit_scene: PackedScene
+@export var energy_scene: PackedScene
+
+@export var max_resources = 350
+# This is the percentage chance of spawning a resource expressed as a decimal between 0 and 1
+@export var resource_chance = float( max_resources ) / ( float( max_resources ) * 2 )
+var resource_spacing = 1
 
 # Keep track of all the enemies
 @export var enemy_count = 0
@@ -30,13 +34,13 @@ var time_start = Time.get_ticks_msec( )
 var time_interval = time_start
 
 @onready var game_area = get_node( "NavigationRegion3D/GameArea" )
-		
+
 # Called when the node enters the scene tree for the first time.
 func _ready( ) :
 	# Create the randomized Game Area
 	for b in max_resources :
 		#continue
-		create_resource( b, true )
+		create_resource( float( b ), true )
 	
 	# Add the player
 	add_player( )
@@ -71,30 +75,64 @@ func add_player( ) :
 	var new_player = player_scene.instantiate( )
 	var spawn_point = get_node( spawn_points[ ( randi( ) % 4 ) ] )
 	new_player.initialize( spawn_point )
-	add_child( new_player )
+	new_player.death.connect( self.player_death )
+	game_area.add_child( new_player )
 	player_count += 1
 
 func create_resource( resource_num, game_start ) :
-	# Create a new instance of the resource  scene.
+	# Create a new instance of the resource scene.
 	# We may want to add something here for different resource types
 	# like some sort of glass/crystal that cannot be destroyed by laser
 	# weapons, instead it refracts the laser as it passes through and
 	# shoot things on the other side.
 	if get_tree( ) != null :
 		var resouces = get_tree( ).get_nodes_in_group( "resource_source" )
-		resource_chance = float( 1.0 - ( resouces.size( ) / max_resources ) )
-		
+		resource_chance = 1.0 - ( float( resouces.size( ) ) / float( max_resources ) )
+	else :
+		print( "No tree to find resouces" )
+	
 	if randf( ) < resource_chance :
+		print( "Generating resource ", resource_num )
 		var resource  = resource_scene.instantiate( )
 		# Choose a random location on the SpawnPath.
 		# We store the reference to the SpawnLocation node.
 		var resource_spawn_location = get_node( "NavigationRegion3D/GameArea/ResourceSpawnPath/ResourceSpawnLocation" )
-		# And give it a random offset.
-		resource_spawn_location.progress = resource_num * 10
-		
-		resource.initialize( resource_spawn_location, game_start )
+		resource_spawn_location.progress_ratio = float( resource_num ) / float( max_resources )
+		resource.initialize( resource_spawn_location.position, game_start, resource_num )
+		resource.resource_damage.connect( resource_damage )
+		resource.resource_death.connect( resource_death )
 		# Spawn the mob by adding it to the Main scene.
 		game_area.add_child( resource )
+		check_position( resource, resource_num )
+
+func check_position( new_resource, resource_num ) :
+	# Don't allow spawning inside another resouce
+	if get_tree( ) != null :
+		var resources = get_tree( ).get_nodes_in_group( "resource_source" )
+		var r = 0
+		for resource in resources :
+			if r != resource_num :
+				var resource_pos = new_resource.position.distance_to( resource.position )
+				if resource_pos < resource_spacing :
+					#position = resource.position - position
+					#print( "Resource ", resource_number, " too close (", resource_pos, ") to resource ", r, " (", resource_spacing, ")" )
+					new_resource.position.x = new_resource.position.x + randf_range( resource_spacing * -1, resource_spacing )
+					new_resource.position.z = new_resource.position.z + randf_range( resource_spacing * -1, resource_spacing )
+					#print( "Resource ", resource_number, " : new position : ", position )
+					#check_position(  )
+			r += 1
+	else :
+		print( "There is no tree of resources?" )
+
+func resource_damage( resource, colour ) :
+	var impact = resource_hit_scene.instantiate( )
+	impact.initialize( colour )
+	resource.add_child( impact )
+
+func resource_death( resource_position, resource_energy, resource_hitter ) :
+	var energy_blob = energy_scene.instantiate( )
+	energy_blob.initialize( resource_energy, resource_position, resource_hitter )
+	game_area.add_child( energy_blob )
 
 func dec_enemy_count( ) :
 	if enemy_count > 0 :
@@ -107,24 +145,25 @@ func inc_enemy_count( ) :
 	enemy_count_total += 1
 
 func create_enemy( ) :
-	inc_enemy_count( )
-	# Create a new instance of the Mob scene.
-	var new_enemy = enemy_scene.instantiate( )
-	# Choose a random location on the SpawnPath.
-	# We store the reference to the SpawnLocation node.
-	var enemy_spawn_location = get_node( "NavigationRegion3D/GameArea/EnemySpawnPath/EnemySpawnLocation" )
-	# And give it a random offset.
-	enemy_spawn_location.progress_ratio = randf( )
-	enemy_spawn_location.position.y += 0.1
-	new_enemy.initialize( enemy_spawn_location.position, enemy_count_total )
-	new_enemy.add_to_enemy_energy_pool.connect( self.add_to_enemy_energy_pool )
-	new_enemy.enemy_death.connect( self.dec_enemy_count )
-	new_enemy.add_experience_to_player.connect( self.add_experience_to_player )
-	if enemy_energy_pool > 300 :
-		new_enemy.collect_energy( 300 )
-		enemy_energy_pool -= 300
-	# Spawn the new enemy by adding it to the Main scene.
-	game_area.add_child( new_enemy )
+	if false :
+		inc_enemy_count( )
+		# Create a new instance of the Mob scene.
+		var new_enemy = enemy_scene.instantiate( )
+		# Choose a random location on the SpawnPath.
+		# We store the reference to the SpawnLocation node.
+		var enemy_spawn_location = get_node( "NavigationRegion3D/GameArea/EnemySpawnPath/EnemySpawnLocation" )
+		# And give it a random offset.
+		enemy_spawn_location.progress_ratio = randf( )
+		enemy_spawn_location.position.y += 0.1
+		new_enemy.initialize( enemy_spawn_location.position, enemy_count_total )
+		new_enemy.add_to_enemy_energy_pool.connect( self.add_to_enemy_energy_pool )
+		new_enemy.death.connect( self.dec_enemy_count )
+		new_enemy.add_experience_to_player.connect( self.add_experience_to_player )
+		if enemy_energy_pool > 300 :
+			new_enemy.collect_energy( 300 )
+			enemy_energy_pool -= 300
+		# Spawn the new enemy by adding it to the Main scene.
+		game_area.add_child( new_enemy )
 
 func add_experience_to_player( player_num : int, experience : float ) :
 	var players = get_tree( ).get_nodes_in_group( "players" )
@@ -145,12 +184,13 @@ func add_to_enemy_energy_pool( energy_amount : float ):
 
 func player_death( player_num ) :
 	print( "Player ", player_num, " has died" )
+	# When we have a UI, we need to bring up something here
 
 func _on_enemy_spawn_timer_timeout( ) :
 	enemy_max = player_highest_level * enemy_max_multiplier
 	if enemy_count < enemy_max :
-		print( "Enemies are at ", enemy_count, " of ", enemy_max )
 		create_enemy( )
+		#print( "Enemies are at ", enemy_count, " of ", enemy_max )
 	else :
 		# If we can't spawn new enemies, check if we can level them up.
 		var enemies = get_tree( ).get_nodes_in_group( "enemies" )
@@ -159,6 +199,5 @@ func _on_enemy_spawn_timer_timeout( ) :
 				enemy.collect_energy( 300 )
 				enemy_energy_pool -= 300
 
-
 func _on_environment_renewal_timer_timeout( ) :
-	create_resource( randf( ) * max_resources, false )
+	create_resource( int( randf( ) * max_resources ), false )

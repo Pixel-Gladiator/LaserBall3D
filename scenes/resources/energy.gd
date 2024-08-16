@@ -59,5 +59,3 @@ func bounce( ) :
 	velocity.x = randf( ) * ( half_speed  / 2 )
 	velocity.y = randf( ) * ( half_speed  / 4 )
 	velocity.z = randf( ) * ( half_speed  / 2 )
-
-

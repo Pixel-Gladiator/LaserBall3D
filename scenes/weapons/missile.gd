@@ -33,7 +33,7 @@ func initialize( spawn_position, look_direction, shooter_node, properties ) :
 	add_collision_exception_with( shooter )
 	add_to_group( "shots" )
 	
-func _process( delta ) :
+func _process( _delta ) :
 	if exploding :
 		$MissleHit.shape.radius *= 1.5
 		#damage -= 1
@@ -67,4 +67,3 @@ func explode( ) :
 	explosion = missile_explosion_scene.instantiate( )
 	explosion.initialize( position )
 	get_parent( ).add_child( explosion )
-

@@ -2,14 +2,9 @@ extends CharacterBody3D
 
 @onready var navigator = $NavigationAgent3D
 
-@onready var blade_R = $Pivot/weapon_slot_1/blade
-@onready var blade_L = $Pivot/weapon_slot_2/blade
-@onready var blaster_R = $Pivot/weapon_slot_3/blaster
-@onready var blaster_L = $Pivot/weapon_slot_4/blaster
-@onready var zooka = $Pivot/weapon_slot_5/zooka
-
 # Weapons
 @export var weapon_system: PackedScene
+@export var blade: PackedScene
 var weapon_list
 var default_weapon = 0
 var default_weapon_slot = 0
@@ -17,26 +12,26 @@ var weapon_slots = [
 	{
 		"enabled" : false,
 		"equipped" : true,
-		"weapon" : default_weapon,
+		"weapon" : null,
 		"weapon_system" : null,
 		"level_unlocked" : 1,
-		"weapons_available" : [ 0, 2, 3, 4 ],
+		"weapons_available" : [ 1, 2, 3, 4 ],
 	},
 	{
 		"enabled" : false,
 		"equipped" : false,
 		"weapon" : null,
 		"weapon_system" : null,
-		"level_unlocked" : 3,
-		"weapons_available" : [ 1 ],
+		"level_unlocked" : 1,
+		"weapons_available" : [ 0 ],
 	},
 	{
 		"enabled" : false,
 		"equipped" : false,
 		"weapon" : null,
 		"weapon_system" : null,
-		"level_unlocked" : 3,
-		"weapons_available" : [ 1 ],
+		"level_unlocked" : 1,
+		"weapons_available" : [ 0 ],
 	},
 	{
 		"enabled" : false,
@@ -111,12 +106,12 @@ var nothing_in_range_count_max = 3
 
 signal add_to_enemy_energy_pool
 signal add_experience_to_player
-signal enemy_death
+signal death
 
 # This function will be called from the Main scene.
 func initialize( start_position, id ) :
 	# We position the mob by placing it at start_position
-	look_at_from_position( start_position, global_position, Vector3.UP )
+	look_at_from_position( start_position, Vector3.ZERO, Vector3.UP )
 	
 	character_num = id
 	
@@ -129,21 +124,10 @@ func initialize( start_position, id ) :
 	add_to_group( "enemies" )
 	adjust_colour( )
 	enable_weapon_slots( )
+	print( "Enemy ", character_num, " initialized" )
 
 func _ready( ) :
 	print( "Enemy ", character_num, " has joined the game" )
-
-func enable_weapon_slots( ) :
-	var slot = 0
-	for weapon_slot in weapon_slots :
-		if not weapon_slot[ "enabled" ] and weapon_slot[ "level_unlocked" ] <= level :
-			weapon_slot[ "enabled" ] = true
-			weapon_slot[ "weapon_system" ] = weapon_system.instantiate( )
-			weapon_slot[ "weapon_system" ].initialize( weapon_slot[ "weapons_available" ][ 0 ], slot, character_num )
-			weapon_slot[ "weapon_system" ].weapon_active_status.connect( self.weapon_active_status )
-			weapon_slot[ "weapon_system" ].weapon_stays_active.connect( self.weapon_stays_active )
-			add_child( weapon_slot[ "weapon_system" ] )
-		slot += 1
 
 func get_num( ) :
 	return character_num
@@ -264,6 +248,9 @@ func set_closest_target( ) :
 			for weapon_slot in weapon_slots :
 				if weapon_slot[ "enabled" ] and position.distance_to( closest_target.position ) <= weapon_slot[ "weapon_system" ].get_weapon_property( "range" ) :
 					attack( weapon_slot, slot_num )
+				else :
+					if weapon_slot[ "weapon" ] != null and weapon_slot[ "weapon" ].has_method( "deactivate" ) :
+						weapon_slot[ "weapon" ].deactivate( )
 				slot_num += 1
 	else :
 		print( "Enemy : No targets within range" )
@@ -303,7 +290,7 @@ func hit( damage, _hit_position, hitter ) :
 			#player.add_experience( experience )
 			add_experience_to_player.emit( hitter.get_num( ), experience )
 			print( "Player ", hitter.get_num( ), " now has ", hitter.get_experience( ), " XP" )
-			enemy_death.emit( )
+			death.emit( )
 			#world.dec_enemy_count( )
 			queue_free( )
 		else :
@@ -339,39 +326,58 @@ func level_up( ) :
 
 func attack( weapon_slot, slot_num ) :
 	if weapon_slot[ "enabled" ] :
-		var slot_name = "Pivot/weapon_slot_%s" % slot_num
-		#print( "Slot : ", slot_name )
-		var slot_path = NodePath( slot_name )
-		#print( "Slot path : ", slot_path.get_concatenated_names( ) )
-		var slot_node = get_node( slot_path )
-		var model_node = null
-		
-		if weapon_slot[ "weapon_system" ].get_weapon_property( "model" ) != null :
-			var model_path = "%s/%s" % [ slot_name, weapon_slot[ "weapon_system" ].get_weapon_property( "model" ) ]
-			var model_path_node = NodePath( model_path )
-			#model_node = get_node( model_path_node )
-			model_node = slot_node.get_child( 0 )
-			if model_node != null :
-				#print( "Enemy %s, using model : %s" % [ character_num, model_path ] )
-				#print( "Enemy ", character_num, " attacking with weapon ", slot_name )
-				model_node.visible = true
-				if model_node.has_method( "activate" ) :
-					print( "Activating Node!" )
-					model_node.activate( )
-			else :
-				print( "Enemy %s, failure to aquire model : %s" % [ character_num, model_path ] )
-				
 		if not weapon_slot[ "weapon_system" ].get_weapon_property( "stays_active" ) or ( weapon_slot[ "weapon_system" ].get_weapon_property( "stays_active" ) and not weapon_slot[ "weapon_system" ].get_weapon_property( "active" ) ) :
+			var slot_name = "Pivot/weapon_slot_%s" % slot_num
+			var slot_path = NodePath( slot_name )
+			var slot_node = get_node( slot_path )
+		
 			if ( weapon_slot[ "weapon_system" ].get_weapon_property( "stays_active" ) and not weapon_slot[ "weapon_system" ].get_weapon_property( "active" ) ) :
 				# This is where we activate spinning the blade
-				if model_node.has_method( "activate" ) :
+				if weapon_slot[ "weapon" ].has_method( "activate" ) :
 					print( "Activating Node!" )
-					model_node.activate( )
+					weapon_slot[ "weapon" ].activate( )
 				else :
 					print( "Nothing to activate" )
 				
 			weapon_slot[ "weapon_system" ].set_active( true, slot_num )
 			weapon_slot[ "weapon_system" ].shoot( slot_node, position.direction_to( closest_target.position ), self )
+
+func enable_weapon_slots( ) :
+	var slot_num = 0
+	for weapon_slot in weapon_slots :
+		if not weapon_slot[ "enabled" ] and weapon_slot[ "level_unlocked" ] <= level :
+			var weapon_slot_name = "Pivot/weapon_slot_%s" % slot_num
+			var weapon_slot_path = NodePath( weapon_slot_name )
+			var weapon_slot_node = get_node( weapon_slot_path )
+			weapon_slot[ "enabled" ] = true
+			weapon_slot[ "weapon_system" ] = weapon_system.instantiate( )
+			weapon_slot[ "weapon_system" ].initialize( level, slot_num, character_num, weapon_slot[ "weapons_available" ] )
+			weapon_slot[ "weapon_system" ].weapon_active_status.connect( self.weapon_active_status )
+			weapon_slot[ "weapon_system" ].weapon_stays_active.connect( self.weapon_stays_active )
+			weapon_slot_node.add_child( weapon_slot[ "weapon_system" ] )
+			# Display a model if it has one.
+			if weapon_slot[ "weapon_system" ].get_weapon_property( "model" ) != null :
+				# Blades are slots 1 and 2
+				print( "Enemy ", character_num, " enabled the ", weapon_slot[ "weapon_system" ].get_weapon_property( "model" ), " model on slot ", slot_num )
+				if slot_num > 0 and slot_num < 3 :
+					weapon_slot[ "weapon" ] = blade.instantiate( )
+					weapon_slot[ "weapon" ].initialize( weapon_slot_node.position, self, weapon_slot[ "weapon_system" ].get_weapon_properties( ) )
+					weapon_slot_node.add_child( weapon_slot[ "weapon" ] )
+					if slot_num == 1 :
+						weapon_slot[ "weapon" ].position.x = 0.0
+						weapon_slot[ "weapon" ].position.y = 0.0
+						weapon_slot[ "weapon" ].position.z = 0.75
+						weapon_slot[ "weapon" ].rotation.x = 2.09
+						weapon_slot[ "weapon" ].rotation.y = 0.0
+						weapon_slot[ "weapon" ].rotation.z = 0.0
+					else :
+						weapon_slot[ "weapon" ].position.x = -0.75
+						weapon_slot[ "weapon" ].position.y = -0.224
+						weapon_slot[ "weapon" ].position.z = -0.75
+						weapon_slot[ "weapon" ].rotation.x = 1.047
+						weapon_slot[ "weapon" ].rotation.y = 0.0
+						weapon_slot[ "weapon" ].rotation.z = 0.0
+		slot_num += 1
 
 func update_target_location( ) :
 	set_closest_target( )
@@ -398,7 +404,7 @@ func get_weapon_slots( ) :
 	return weapon_slots
 
 func weapon_active_status( slot : int, status : bool ) :
-	pass
+	print( "Enemy ", character_num, " weapon slot ", slot, " Weapon active status is called : ", status )
 
 func weapon_stays_active( slot : int, status : bool ) :
-	pass
+	print( "Enemy ", character_num, " weapon slot ", slot, " Weapon stays active is called : ", status )

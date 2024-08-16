@@ -41,6 +41,7 @@ collision_mask = 39
 safe_margin = 0.01
 script = ExtResource("1_ou3a5")
 weapon_system = ExtResource("2_r5fnt")
+blade = ExtResource("4_bovyq")
 
 [node name="Pivot" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
@@ -64,15 +65,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.317256, 0, -1.38677e-08)
 [node name="weapon_slot_1" type="Marker3D" parent="Pivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.773259, -0.183441, 3.38002e-08)
 
-[node name="blade" parent="Pivot/weapon_slot_1" instance=ExtResource("4_bovyq")]
-transform = Transform3D(1.25, 0, 0, 0, -0.625, -1.08253, 0, 1.08253, -0.625, 0, 0, 0.75)
-visible = false
-
 [node name="weapon_slot_2" type="Marker3D" parent="Pivot"]
-
-[node name="blade" parent="Pivot/weapon_slot_2" instance=ExtResource("4_bovyq")]
-transform = Transform3D(1.25, 0, 0, 0, 0.625, -1.08253, 0, 1.08253, 0.625, -0.75, -0.224, -0.75)
-visible = false
 
 [node name="weapon_slot_3" type="Marker3D" parent="Pivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, -0.14, 1.65)

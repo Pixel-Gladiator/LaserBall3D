@@ -10,11 +10,11 @@ var weapon_properties
 
 var player
 
-func initialize( spawn_position, look_direction, player_node, properties ) :
+func initialize( spawn_position, _look_direction, player_node, properties ) :
 	player = player_node
 	weapon_properties = properties
 	
-	position = player.global_position
+	position = spawn_position
 	position.y += 0.4
 	#look_at_from_position( spawn_position, position )
 	#print( "start pos : ", position )
@@ -51,4 +51,3 @@ func _physics_process( delta ) :
 	
 	if $JoltHit.shape.radius > weapon_properties.range :
 		queue_free( )
-

@@ -11,7 +11,7 @@ material = SubResource("StandardMaterial3D_6abk3")
 radius = 0.1
 height = 0.2
 
-[node name="BarrierHit" type="Node3D"]
+[node name="ResourceHit" type="Node3D"]
 script = ExtResource("1_y8r3e")
 
 [node name="CPUParticles3D" type="CPUParticles3D" parent="."]

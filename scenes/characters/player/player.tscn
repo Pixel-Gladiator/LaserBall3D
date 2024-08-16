@@ -1,10 +1,9 @@
-[gd_scene load_steps=13 format=3 uid="uid://dm8u5w03ft7og"]
+[gd_scene load_steps=12 format=3 uid="uid://dm8u5w03ft7og"]
 
 [ext_resource type="Script" path="res://scenes/characters/player/player.gd" id="1_b87en"]
 [ext_resource type="PackedScene" uid="uid://dhbbntxtod3tx" path="res://media/models/player.gltf" id="1_i34tp"]
 [ext_resource type="PackedScene" uid="uid://ca7b5goalc73l" path="res://scenes/weapons/weapon_system.tscn" id="2_g36fk"]
 [ext_resource type="PackedScene" uid="uid://dyuf43gey8qw" path="res://scenes/characters/player/player_boost.tscn" id="3_dh0w5"]
-[ext_resource type="PackedScene" uid="uid://05biv5lxbrc8" path="res://scenes/weapons/blade.tscn" id="4_q61mb"]
 [ext_resource type="PackedScene" uid="uid://b45widqcidgi" path="res://media/models/weapon_blaster.gltf" id="5_bspei"]
 [ext_resource type="PackedScene" uid="uid://dmdqafhh4ox5q" path="res://media/models/weapon_zooka.gltf" id="6_onh4w"]
 
@@ -52,14 +51,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.14633, 0.465348, -5.01076e-
 mesh = SubResource("SphereMesh_5f8jv")
 
 [node name="weapon_slot_0" type="Marker3D" parent="Pivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 1.30193)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 1.67047)
 
 [node name="weapon_slot_1" type="Marker3D" parent="Pivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3794, 0)
-
-[node name="blade" parent="Pivot/weapon_slot_1" instance=ExtResource("4_q61mb")]
-transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, -0.380132, 0)
-visible = false
 
 [node name="weapon_slot_2" type="Marker3D" parent="Pivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3, -0.25, 1.35)

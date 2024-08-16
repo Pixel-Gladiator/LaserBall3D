@@ -2,13 +2,28 @@ extends Resource
 
 @export var weapon_list = [
 	{
+		"name" : "Blade",
+		"scene_name" : "blade",
+		"damage" : 0.1,
+		"rate_of_fire" : 4,
+		"speed" : 10,
+		"energy_cost" : 5,
+		"range" : 5.0,
+		"level_required" : 1,
+		"enabled" : false,
+		"stays_active" : true,
+		"active" : false,
+		"gravity" : false,
+		"target_lock" : false,
+		"model" : "blade",
+	}, {
 		"name" : "Laser Pistol",
 		"scene_name" : "laser_pistol",
 		"damage" : 2,
 		"rate_of_fire" : 3,
 		"speed" : 50,
 		"energy_cost" : 1,
-		"range" : 100,
+		"range" : 100.0,
 		"level_required" : 1,
 		"enabled" : true,
 		"stays_active" : false,
@@ -17,28 +32,13 @@ extends Resource
 		"target_lock" : false,
 		"model" : null,
 	}, {
-		"name" : "Blade",
-		"scene_name" : "blade",
-		"damage" : 0.1,
-		"rate_of_fire" : 4,
-		"speed" : 10,
-		"energy_cost" : 5,
-		"range" : 5,
-		"level_required" : 3,
-		"enabled" : false,
-		"stays_active" : true,
-		"active" : false,
-		"gravity" : false,
-		"target_lock" : false,
-		"model" : "blade",
-	}, {
 		"name" : "Laser Rifle",
 		"scene_name" : "laser_rifle",
 		"damage" : 5,
 		"rate_of_fire" : 5,
 		"speed" : 50,
 		"energy_cost" : 5,
-		"range" : 100,
+		"range" : 100.0,
 		"level_required" : 5,
 		"enabled" : false,
 		"stays_active" : false,
@@ -53,7 +53,7 @@ extends Resource
 		"rate_of_fire" : 5,
 		"speed" : 50,
 		"energy_cost" : 4,
-		"range" : 100,
+		"range" : 100.0,
 		"level_required" : 7,
 		"enabled" : false,
 		"stays_active" : false,
@@ -68,7 +68,7 @@ extends Resource
 		"rate_of_fire" : 10,
 		"speed" : 50,
 		"energy_cost" : 1,
-		"range" : 100,
+		"range" : 100.0,
 		"level_required" : 9,
 		"enabled" : false,
 		"stays_active" : false,
@@ -83,7 +83,7 @@ extends Resource
 		"rate_of_fire" : 5,
 		"speed" : 40,
 		"energy_cost" : 15,
-		"range" : 100,
+		"range" : 100.0,
 		"level_required" : 10,
 		"enabled" : false,
 		"stays_active" : false,
@@ -98,7 +98,7 @@ extends Resource
 		"rate_of_fire" : 5,
 		"speed" : 40,
 		"energy_cost" : 25,
-		"range" : 100,
+		"range" : 100.0,
 		"level_required" : 15,
 		"enabled" : false,
 		"stays_active" : false,
@@ -113,7 +113,7 @@ extends Resource
 		"rate_of_fire" : 5,
 		"speed" : 50,
 		"energy_cost" : 15,
-		"range" : 100,
+		"range" : 100.0,
 		"level_required" : 15,
 		"enabled" : false,
 		"stays_active" : false,
@@ -128,7 +128,7 @@ extends Resource
 		"rate_of_fire" : 5,
 		"speed" : 40,
 		"energy_cost" : 10,
-		"range" : 100,
+		"range" : 100.0,
 		"level_required" : 20,
 		"enabled" : false,
 		"stays_active" : false,
@@ -143,7 +143,7 @@ extends Resource
 		"rate_of_fire" : 5,
 		"speed" : 40,
 		"energy_cost" : 10,
-		"range" : 100,
+		"range" : 100.0,
 		"level_required" : 25,
 		"enabled" : false,
 		"stays_active" : false,
@@ -175,5 +175,11 @@ func get_weapon_properties( weapon_index : int ) :
 func get_weapon_property( weapon_index : int, property : String ) :
 	return weapon_list[ weapon_index ][ property ]
 
-func set_weapon_active( weapon_index : int, status : bool ) :
-	weapon_list[ weapon_index ][ "active" ] = status
+func set_weapon_active( weapon_index : int ) :
+	if weapon_list[ weapon_index ][ "active" ] :
+		weapon_list[ weapon_index ][ "active" ] = false
+	else :
+		weapon_list[ weapon_index ][ "active" ] = true
+
+func get_weapon_count( ) :
+	return weapon_list.size( )

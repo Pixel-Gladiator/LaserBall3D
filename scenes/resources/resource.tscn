@@ -1,8 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://dyf4txif4freg"]
+[gd_scene load_steps=5 format=3 uid="uid://dyf4txif4freg"]
 
 [ext_resource type="Script" path="res://scenes/resources/resource.gd" id="1_idmt4"]
-[ext_resource type="PackedScene" uid="uid://c5lybek3h7v56" path="res://scenes/resources/resource_hit.tscn" id="2_ybn8b"]
-[ext_resource type="PackedScene" uid="uid://fsyffxodkeon" path="res://scenes/resources/energy.tscn" id="3_qyttd"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ctolo"]
 resource_local_to_scene = true
@@ -27,8 +25,6 @@ collision_layer = 32
 collision_mask = 31
 safe_margin = 0.01
 script = ExtResource("1_idmt4")
-resource_hit_scene = ExtResource("2_ybn8b")
-energy_scene = ExtResource("3_qyttd")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("CapsuleMesh_yxxt5")
