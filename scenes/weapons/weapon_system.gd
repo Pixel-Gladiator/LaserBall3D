@@ -67,9 +67,7 @@ func get_weapon_property( property_name : String ) :
 func get_best_weapon( level : int, available_weapons : Array ) :
 	var weapon_index = null
 	for available_weapon_index in available_weapons :
-		if level < weapon_list.get_weapon_property( available_weapon_index, "level_required" ) :
-			break
-		else :
+		if level >= weapon_list.get_weapon_property( available_weapon_index, "level_required" ) :
 			weapon_index = available_weapon_index
 	
 	return weapon_index

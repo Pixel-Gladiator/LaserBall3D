@@ -15,10 +15,6 @@ var multiplayer_data = [
 @export var weapon_system: PackedScene
 
 @onready var booster = $Pivot/booster/player_boost
-@onready var blaster_L = $Pivot/weapon_slot_2/blaster
-@onready var blaster_R = $Pivot/weapon_slot_3/blaster
-@onready var zooka_L = $Pivot/weapon_slot_4/zooka
-@onready var zooka_R = $Pivot/weapon_slot_5/zooka
 
 ###############################################################################
 # Player Default/Starting Values
@@ -94,6 +90,9 @@ var weapon_slots = [
 		"weapons_available" : [ 6, 8, 9 ],
 	},
 ]
+# If the active_weapon_slot value is greater than the actual number provided 
+# in the weapon_slots array, then weapon slot actions are applied all slots
+# ie. weapon cycling
 var active_weapon_slot = 20
 var weapon_slots_available = 0
 

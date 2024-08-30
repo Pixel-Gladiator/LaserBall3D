@@ -12,18 +12,18 @@ var ui
 @export var resource_hit_scene: PackedScene
 @export var energy_scene: PackedScene
 
-@export var max_resources = 350
+var max_resources = 350
 # This is the percentage chance of spawning a resource expressed as a decimal between 0 and 1
-@export var resource_chance = float( max_resources ) / ( float( max_resources ) * 2 )
+var resource_chance = float( max_resources ) / ( float( max_resources ) * 2 )
 var resource_spacing = 1
 
 # Keep track of all the enemies
-@export var enemy_count = 0
+var enemy_count = 0
 # Set maximum enemy count
 var enemy_max = 1
 var enemy_max_multiplier = 2
 # Track the total number of enemies
-@export var enemy_count_total = 0
+var enemy_count_total = 0
 
 var enemy_energy_pool = 0
 
@@ -38,8 +38,12 @@ var time_interval = time_start
 # Called when the node enters the scene tree for the first time.
 func _ready( ) :
 	# Create the randomized Game Area
+	var resource_spawn_location = get_node( "NavigationRegion3D/GameArea/ResourceSpawnPath/ResourceSpawnLocation" )
+	# Set the maximum points on the SpawnPath.
+	resource_spawn_location.progress_ratio = 1
+	max_resources = int( resource_spawn_location.progress )
+	resource_spawn_location.progress_ratio = 0
 	for b in max_resources :
-		#continue
 		create_resource( float( b ), true )
 	
 	# Add the player
@@ -87,17 +91,20 @@ func create_resource( resource_num, game_start ) :
 	# shoot things on the other side.
 	if get_tree( ) != null :
 		var resouces = get_tree( ).get_nodes_in_group( "resource_source" )
-		resource_chance = 1.0 - ( float( resouces.size( ) ) / float( max_resources ) )
+		if game_start :
+			resource_chance = 0.1
+		else :
+			resource_chance = 1.0 - ( float( resouces.size( ) ) / float( max_resources ) )
 	else :
 		print( "No tree to find resouces" )
 	
 	if randf( ) < resource_chance :
 		print( "Generating resource ", resource_num )
 		var resource  = resource_scene.instantiate( )
-		# Choose a random location on the SpawnPath.
 		# We store the reference to the SpawnLocation node.
 		var resource_spawn_location = get_node( "NavigationRegion3D/GameArea/ResourceSpawnPath/ResourceSpawnLocation" )
-		resource_spawn_location.progress_ratio = float( resource_num ) / float( max_resources )
+		# Choose a random location on the SpawnPath.
+		resource_spawn_location.progress_ratio = ( float( resource_num ) / float( max_resources ) )
 		resource.initialize( resource_spawn_location.position, game_start, resource_num )
 		resource.resource_damage.connect( resource_damage )
 		resource.resource_death.connect( resource_death )
